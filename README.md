@@ -43,4 +43,3 @@ Open the `.xml` file in the UPPAAL GUI and use the **Verifier** tab to test quer
 - Aayush Kumar  
 - Samarth Kothari  
 - Aakarsh Mishra
-# UPPAAL-scholarship-model
