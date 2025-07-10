@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+const string correct_email = "f20xxXXXX@pilani.bits-pilani.ac.in";
+const int correctPass = 1234;  // Correct password for authentication
+
+bool authenticated(const string&amp; email, int pass)
+{
+   return (email == correct_email) &amp;&amp; (pass==correctPass);
+}
+
+// Student-related data
+int cg = 10;            // CGPA for each student
+bool appld = false; // Tracks if a student has applied for a scholarship          
+
+// Channel declarations
+chan authen, not_authen;     // Successful and unsuccessful authentication
+chan sign_in, sign_out;      // Sign-in and sign-out channels
+chan fetch_transcription, fetch_info; // Fetching academic transcripts and personal info
+chan schlrsp_appld;             // Scholarship application submission 
+chan get_transcription;
+chan transcription_sent;        // For sending the transcript
+chan schlrship_req;             // Scholarship request channel
+chan rejected, approved;     // Scholarship approval/rejection responses
+chan home;                      // Return to the home page
+chan merit, mcn;             // Specific scholarship types (Merit and Merit-Cum-Need)
+chan server_request;            // Requests to the academic server
+chan email_id;
+chan enter_email;
+chan enter_pass;
+
+</declaration>
+	<template>
+		<name x="5" y="5">Student</name>
+		<declaration>// Place local declarations here.
+</declaration>
+		<location id="id0" x="-544" y="-25">
+			<name x="-646" y="-34">Logged_out</name>
+			<label kind="comments" x="-748" y="-68">Here, logged_out is our start and initial state.</label>
+		</location>
+		<location id="id1" x="-323" y="-25">
+			<name x="-348" y="-8">Verify</name>
+		</location>
+		<location id="id2" x="-119" y="-25">
+			<name x="-212" y="-59">Home_Page</name>
+		</location>
+		<location id="id3" x="-119" y="280">
+			<name x="-161" y="306">Prsnl_Info</name>
+		</location>
+		<location id="id4" x="-119" y="-297">
+			<name x="-204" y="-340">Fetch_Transcription</name>
+		</location>
+		<location id="id5" x="59" y="-25">
+			<name x="85" y="-34">Scholarship</name>
+		</location>
+		<location id="id6" x="178" y="-93">
+			<name x="168" y="-127">Merit_cum_Need_Scholarship</name>
+		</location>
+		<location id="id7" x="187" y="51">
+			<name x="187" y="68">Merit_Scholarship</name>
+		</location>
+		<init ref="id0"/>
+		<transition id="id8">
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-255" y="-17">authen?</label>
+		</transition>
+		<transition id="id9">
+			<source ref="id7"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="68" y="127">home!</label>
+			<nail x="85" y="127"/>
+		</transition>
+		<transition id="id10">
+			<source ref="id5"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="85" y="17">merit!</label>
+			<label kind="assignment" x="136" y="0">appld = 1</label>
+		</transition>
+		<transition id="id11">
+			<source ref="id6"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="68" y="-212">home!</label>
+			<nail x="85" y="-187"/>
+		</transition>
+		<transition id="id12">
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="68" y="-85">mcn!</label>
+			<label kind="assignment" x="127" y="-68">appld = 1</label>
+		</transition>
+		<transition id="id13">
+			<source ref="id2"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-59" y="-25">appld == 0</label>
+			<label kind="synchronisation" x="-76" y="-51">schlrsp_appld!</label>
+		</transition>
+		<transition id="id14">
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-76" y="-212">home!</label>
+			<nail x="-76" y="-153"/>
+		</transition>
+		<transition id="id15">
+			<source ref="id2"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-323" y="-212">fetch_transcription!</label>
+			<nail x="-161" y="-153"/>
+		</transition>
+		<transition id="id16">
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-357" y="119">sign_out!</label>
+			<label kind="assignment" x="-365" y="68">appld == 0</label>
+			<nail x="-323" y="119"/>
+		</transition>
+		<transition id="id17">
+			<source ref="id3"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-68" y="161">home!</label>
+			<nail x="-68" y="127"/>
+		</transition>
+		<transition id="id18">
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-255" y="161">fetch_info!</label>
+			<nail x="-170" y="136"/>
+		</transition>
+		<transition id="id19">
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-510" y="-161">not_authen?</label>
+			<nail x="-450" y="-136"/>
+		</transition>
+		<transition id="id20">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-467" y="-17">sign_in!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Portal</name>
+		<parameter>const string e, int p</parameter>
+		<location id="id21" x="-1785" y="-187">
+			<name x="-1844" y="-195">Idle</name>
+		</location>
+		<location id="id22" x="-1581" y="-187">
+			<name x="-1632" y="-170">Authenticating</name>
+			<label kind="comments" x="-1844" y="-34">Proceed only if the given credentials are correct.</label>
+			<committed/>
+		</location>
+		<location id="id23" x="-1394" y="-187">
+			<name x="-1436" y="-161">HomePage</name>
+		</location>
+		<location id="id24" x="-1505" y="-544">
+			<name x="-1556" y="-587">Prsnl_Info</name>
+		</location>
+		<location id="id25" x="-1122" y="-408">
+			<name x="-1292" y="-433">Fetching_Transcripts</name>
+			<committed/>
+		</location>
+		<location id="id26" x="-935" y="-484">
+			<name x="-978" y="-518">Server_Request</name>
+		</location>
+		<location id="id27" x="-1130" y="-306">
+			<name x="-1113" y="-306">Transcript</name>
+		</location>
+		<location id="id28" x="-1181" y="-85">
+			<name x="-1164" y="-111">Fetching_Scholarship</name>
+			<committed/>
+		</location>
+		<location id="id29" x="-977" y="8">
+			<name x="-952" y="0">Scholarship_AorR</name>
+		</location>
+		<location id="id30" x="-765" y="-195">
+			<name x="-775" y="-229">Approved</name>
+		</location>
+		<location id="id31" x="-1215" y="25">
+			<name x="-1300" y="17">Rejected</name>
+		</location>
+		<init ref="id21"/>
+		<transition id="id32">
+			<source ref="id31"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-1343" y="-68">home?</label>
+		</transition>
+		<transition id="id33">
+			<source ref="id29"/>
+			<target ref="id31"/>
+			<label kind="synchronisation" x="-1156" y="25">rejected?</label>
+		</transition>
+		<transition id="id34">
+			<source ref="id30"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-1079" y="-212">home?</label>
+		</transition>
+		<transition id="id35">
+			<source ref="id29"/>
+			<target ref="id30"/>
+			<label kind="synchronisation" x="-833" y="-127">approved?</label>
+		</transition>
+		<transition id="id36">
+			<source ref="id28"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-1079" y="-59">schlrship_req!</label>
+		</transition>
+		<transition id="id37">
+			<source ref="id23"/>
+			<target ref="id28"/>
+			<label kind="synchronisation" x="-1326" y="-178">schlrsp_appld?</label>
+		</transition>
+		<transition id="id38">
+			<source ref="id27"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-1258" y="-246">home?</label>
+		</transition>
+		<transition id="id39">
+			<source ref="id26"/>
+			<target ref="id27"/>
+			<label kind="synchronisation" x="-1028" y="-391">transcription_sent?</label>
+		</transition>
+		<transition id="id40">
+			<source ref="id25"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-1113" y="-484">server_request!</label>
+		</transition>
+		<transition id="id41">
+			<source ref="id23"/>
+			<target ref="id25"/>
+			<label kind="synchronisation" x="-1377" y="-348">fetch_transcription?</label>
+		</transition>
+		<transition id="id42">
+			<source ref="id24"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-1428" y="-459">home?</label>
+			<nail x="-1411" y="-400"/>
+		</transition>
+		<transition id="id43">
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="synchronisation" x="-1606" y="-442">fetch_info?</label>
+			<nail x="-1505" y="-366"/>
+		</transition>
+		<transition id="id44">
+			<source ref="id23"/>
+			<target ref="id21"/>
+			<label kind="synchronisation" x="-1632" y="-77">sign_out?</label>
+			<nail x="-1589" y="-77"/>
+		</transition>
+		<transition id="id45">
+			<source ref="id22"/>
+			<target ref="id23"/>
+			<label kind="guard" x="-1555" y="-229">authenticated(e,p)</label>
+			<label kind="synchronisation" x="-1521" y="-212">authen!</label>
+		</transition>
+		<transition id="id46">
+			<source ref="id22"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-1759" y="-348">!authenticated(e,p)</label>
+			<label kind="synchronisation" x="-1742" y="-331">not_authen!</label>
+			<nail x="-1683" y="-306"/>
+		</transition>
+		<transition id="id47">
+			<source ref="id21"/>
+			<target ref="id22"/>
+			<label kind="synchronisation" x="-1717" y="-187">sign_in?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Academic_Server</name>
+		<location id="id48" x="-612" y="-51">
+			<name x="-663" y="-59">Idle</name>
+		</location>
+		<location id="id49" x="-416" y="-187">
+			<name x="-450" y="-221">Processing</name>
+			<committed/>
+		</location>
+		<location id="id50" x="-425" y="68">
+			<name x="-501" y="93">Fetched_Transcription</name>
+			<committed/>
+		</location>
+		<init ref="id48"/>
+		<transition id="id51">
+			<source ref="id50"/>
+			<target ref="id48"/>
+			<label kind="synchronisation" x="-654" y="17">transcription_sent!</label>
+		</transition>
+		<transition id="id52">
+			<source ref="id49"/>
+			<target ref="id50"/>
+		</transition>
+		<transition id="id53">
+			<source ref="id48"/>
+			<target ref="id49"/>
+			<label kind="synchronisation" x="-654" y="-136">server_request?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Scholarship_approving_Committee</name>
+		<location id="id54" x="-459" y="-102">
+			<name x="-518" y="-110">Idle</name>
+		</location>
+		<location id="id55" x="-246" y="-229">
+			<name x="-289" y="-263">Processing</name>
+			<committed/>
+		</location>
+		<location id="id56" x="-246" y="85">
+			<name x="-263" y="111">MCN</name>
+			<committed/>
+		</location>
+		<location id="id57" x="-459" y="42">
+			<name x="-544" y="42">Approved</name>
+			<committed/>
+		</location>
+		<location id="id58" x="0" y="42">
+			<name x="34" y="34">Rejected</name>
+			<committed/>
+		</location>
+		<location id="id59" x="0" y="-127">
+			<name x="25" y="-136">Merit</name>
+			<committed/>
+		</location>
+		<init ref="id54"/>
+		<transition id="id60">
+			<source ref="id57"/>
+			<target ref="id54"/>
+			<label kind="synchronisation" x="-535" y="-34">approved!</label>
+		</transition>
+		<transition id="id61">
+			<source ref="id59"/>
+			<target ref="id57"/>
+			<label kind="guard" x="-144" y="-68">cg&gt;=9</label>
+		</transition>
+		<transition id="id62">
+			<source ref="id56"/>
+			<target ref="id57"/>
+			<label kind="guard" x="-391" y="68">cg&gt;=7</label>
+		</transition>
+		<transition id="id63">
+			<source ref="id56"/>
+			<target ref="id58"/>
+			<label kind="guard" x="-136" y="68">cg&lt;7</label>
+		</transition>
+		<transition id="id64">
+			<source ref="id58"/>
+			<target ref="id54"/>
+			<label kind="synchronisation" x="-382" y="-102">rejected!</label>
+		</transition>
+		<transition id="id65">
+			<source ref="id59"/>
+			<target ref="id58"/>
+			<label kind="guard" x="8" y="-59">cg&lt;9</label>
+		</transition>
+		<transition id="id66">
+			<source ref="id55"/>
+			<target ref="id59"/>
+			<label kind="synchronisation" x="-119" y="-204">merit?</label>
+		</transition>
+		<transition id="id67">
+			<source ref="id55"/>
+			<target ref="id56"/>
+			<label kind="synchronisation" x="-238" y="-136">mcn?</label>
+		</transition>
+		<transition id="id68">
+			<source ref="id54"/>
+			<target ref="id55"/>
+			<label kind="synchronisation" x="-450" y="-204">schlrship_req?</label>
+		</transition>
+	</template>
+	<system>portal = Portal("f20xxXXXX@pilani.bits-pilani.ac.in",1234);
+
+system Student, portal, Academic_Server, Scholarship_approving_Committee; 
+
+</system>
+	<queries>
+		<query>
+			<formula/>
+			<comment>Safety Checks:</comment>
+		</query>
+		<query>
+			<formula>A[] (Student.Scholarship imply !appld)
+</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:19 +0530">
+			</result>
+		</query>
+		<query>
+			<formula>A[] !deadlock</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:22 +0530">
+			</result>
+		</query>
+		<query>
+			<formula>A[] !(Student.Merit_cum_Need_Scholarship &amp;&amp; Student.Merit_Scholarship)
+</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:24 +0530">
+			</result>
+		</query>
+		<query>
+			<formula>A[] (Student.Logged_out imply not portal.HomePage)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:26 +0530">
+			</result>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment>Liveness Checks:</comment>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (Student.Home_Page imply Student.Home_Page)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:28 +0530">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; (cg&gt;9 imply portal.Approved)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:29 +0530">
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (Student.Fetch_Transcription imply Academic_Server.Fetched_Transcription)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:31 +0530">
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (Scholarship_approving_Committee.Approved imply portal.HomePage)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-11-26 23:02:33 +0530">
+			</result>
+		</query>
+	</queries>
+</nta>
